@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  annotations:
+    pv.kubernetes.io/provisioned-by: file.csi.azure.com
+  name: cloudfilepv
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: azurefile-csi
+  csi:
+    driver: file.csi.azure.com
+    readOnly: false
+    volumeHandle: mystorageaccount_myshare  # this volumeid needs to be unique for every identical share in the cluster; {account-name}_{file-share-name}.
+    volumeAttributes:
+      # resourceGroup: my-resource-group  # optional, only set this when storage account is not in the same resource group as the nodes
+      shareName: myshare
+    nodeStageSecretRef:
+      name: azure-storage-secret
+      namespace: default
+  mountOptions:
+    - dir_mode=0777
+    - file_mode=0777
+    - uid=0
+    - gid=0
+    - mfsymlinks
+    - cache=strict
+    - nosharesock
+    - nobrl

@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: downloader
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: downloader
+  template:
+    metadata:
+      labels:
+        app: downloader
+    spec:
+      containers:
+      - name: downloader
+        image: ellerbrock/alpine-bash-curl-ssl
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        command: ["/bin/sh", "-c"]
+        args:
+        - while true; do
+          echo "$(date), downloading file from URL :${FILE_URL}";
+          curl -o downloaded.txt $FILE_URL;
+          echo "$(date), finished downloading.";
+          rm -rf downloaded.txt;
+          sleep 1h;  
+          done
+        env:
+          - name: FILE_URL
+            valueFrom:
+              configMapKeyRef:
+                name: statefulapp-configmap
+                key: FILE_URL
